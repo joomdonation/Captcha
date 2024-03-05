@@ -349,7 +349,7 @@ class CaptchaBuilder implements CaptchaBuilderInterface
 
         return $col;
     }
-    
+
     /**
      * Generate the image
      */
