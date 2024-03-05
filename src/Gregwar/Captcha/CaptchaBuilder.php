@@ -54,11 +54,6 @@ class CaptchaBuilder implements CaptchaBuilderInterface
     protected $phrase = null;
 
     /**
-     * @var PhraseBuilderInterface
-     */
-    protected $builder;
-
-    /**
      * @var bool
      */
     protected $distortion = true;
@@ -133,15 +128,9 @@ class CaptchaBuilder implements CaptchaBuilderInterface
      */
     public $tempDir = 'temp/';
 
-    public function __construct($phrase = null, PhraseBuilderInterface $builder = null)
+    public function __construct($phrase = null)
     {
-        if ($builder === null) {
-            $this->builder = new PhraseBuilder;
-        } else {
-            $this->builder = $builder;
-        }
-
-        $this->phrase = is_string($phrase) ? $phrase : $this->builder->build($phrase);
+        $this->phrase = $phrase;
     }
 
     /**
@@ -196,14 +185,6 @@ class CaptchaBuilder implements CaptchaBuilderInterface
     public function getPhrase()
     {
         return $this->phrase;
-    }
-
-    /**
-     * Returns true if the given phrase is good
-     */
-    public function testPhrase($phrase)
-    {
-        return ($this->builder->niceize($phrase) == $this->builder->niceize($this->getPhrase()));
     }
 
     /**
@@ -368,39 +349,7 @@ class CaptchaBuilder implements CaptchaBuilderInterface
 
         return $col;
     }
-
-    /**
-     * Try to read the code against an OCR
-     */
-    public function isOCRReadable()
-    {
-        if (!is_dir($this->tempDir)) {
-            @mkdir($this->tempDir, 0755, true);
-        }
-
-        $tempj = $this->tempDir . uniqid('captcha', true) . '.jpg';
-        $tempp = $this->tempDir . uniqid('captcha', true) . '.pgm';
-
-        $this->save($tempj);
-        shell_exec("convert $tempj $tempp");
-        $value = trim(strtolower(shell_exec("ocrad $tempp")));
-
-        @unlink($tempj);
-        @unlink($tempp);
-
-        return $this->testPhrase($value);
-    }
-
-    /**
-     * Builds while the code is readable against an OCR
-     */
-    public function buildAgainstOCR($width = 150, $height = 40, $font = null, $fingerprint = null)
-    {
-        do {
-            $this->build($width, $height, $font, $fingerprint);
-        } while ($this->isOCRReadable());
-    }
-
+    
     /**
      * Generate the image
      */
